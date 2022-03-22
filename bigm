@@ -1,0 +1,106 @@
+clc 
+clear all 
+%noofvariables=4;
+m=100000;
+cost=[3 2 0 0 -m 0  ];
+%m=100000;
+a=[1 1 1 0 0 2;1 3 0 1 0 3;1 -1 0 0 1 1];
+%b=[11;7;2];
+%variables={'x1','x2','x3','x4','s1','s2','s3','sol'};
+variables={'x1','x2','s1','s2','a1','sol'};
+bv=[3 4 5];
+
+%s = eye(size(info,1))
+
+%a=[info s b];
+
+%cost=zeros(1,size(a,2));
+%cost(1:noofvariables)=c;
+
+%basic variable 
+%bv=noofvariables+1:1:size(a,2)-1;
+
+zjcj = cost(bv)*a-cost 
+zcj = [zjcj ; a];
+
+simpTable=array2table(zcj);
+simpTable.Properties.VariableNames(1:size(zcj,2))=variables;
+
+%simplex starts 
+
+run = true 
+while(run)
+    if any (zjcj < 0)
+        fprintf('not the optimal solution')
+        
+        disp('display the old basic variables');
+        disp(bv);
+        
+        %finding the entering variables
+        
+        zc = zjcj(1:end-1);
+        [min_val , pvt_col]=min(zc)
+        fprintf('the entering variable %d is',pvt_col);
+        
+        
+        %finding the leaving variable 
+        
+        sol=a(:,end);
+        column=a(:,pvt_col);
+        
+        if all (column < 0)
+            error('unbounded');
+            
+        else
+            for i=1:size(a,1)
+                if column(i)>0
+                    ratio(i)=sol(i)./column(i);
+                else
+                    ratio(i)=inf;
+                end
+            end
+            
+            %find the minimum ratio 
+            [minratio , pvt_row] = min(ratio);
+            
+            fprintf('the eaving variable %d is ',pvt_row);
+            
+            
+           bv(pvt_row)=pvt_col;
+           disp('the new basic variables are ')
+           disp(bv)
+           
+           %pvt_key 
+           
+           pvt_key=a(pvt_row,pvt_col);
+           a(pvt_row,:)=a(pvt_row,:)./pvt_key
+           
+           for i= 1:size(a,1)
+               if i~=pvt_row
+                   a(i,:)=a(i,:)-a(i,pvt_col).*a(pvt_row,:);
+               end
+           end
+           zjcj = zjcj - zjcj(pvt_col).*a(pvt_row,:)
+           
+           zcj = [zjcj; a]
+           
+           Table=array2table(zcj);
+           Table.Properties.VariableNames(1:size(zcj,2))=variables;
+        end
+        BFS = zeros(1,size(a,2));
+BFS(bv) = a(:,end);
+BFS(end) = sum(BFS .*cost);
+current_bfs = array2table(BFS);
+current_bfs.Properties.VariableNames(1:size(current_bfs,2)) = variables
+      
+    else
+        run = false;
+        fprintf('optimal solution reached ');
+    end
+end
+
+        
+           
+              
+                    
+       
