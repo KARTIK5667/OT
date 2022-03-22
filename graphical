@@ -1,0 +1,67 @@
+clc
+clear all 
+format short 
+
+a=[2 4 ; 3 5];
+b=[8;15];
+c=[3 2];
+
+y=0:1:max(b);
+x11=(b(1)-a(1,2)*y)/a(1,1);
+x21=(b(2)-a(2,2)*y)/a(2,1);
+
+%x11=max(0,x11);
+%x21=max(0,x21);
+
+plot(y,x11,'r',y,x21,'b');
+xlabel('value of x');
+ylabel('value of y');
+title(' x vs y')
+legend();
+grid on ;
+
+
+cx1=find(y==0);
+c1=find(x11==0);
+c2=find(x21==0);
+
+line1=[y(:,[c1 cx1]); x11(:,[c1 cx1])]'
+
+line2=[y(:,[c2 cx1]); x21(:,[c2 cx1])]'
+
+cornerpts = unique([line1 ; line2],'rows');
+pts=[];
+for i=1:size(a,1)
+    for j=i+1:size(a,1)
+        p=[a(i,:);a(j,:)];
+        q=[b(i);b(j)];
+        x=p\q;
+        pts=[pts x];
+    end
+end
+pts=pts'
+fprintf('the value of intersection points % are ',pts);
+
+allpts=unique([cornerpts;pts],'rows');
+
+pt=cons(allpts);
+
+pt=unique(pt,'rows');
+
+for i=1:size(pt,1)
+    ans(i,:)=sum(pt(i,:).*c);
+end
+
+[maxval,maxind]=max(ans);
+maxval
+maxind
+[fxval, indfx]=min(ans);
+optval = allsol(indfx,:);
+
+optimal_bfs = array2table(optval);
+optimal_bfs.Properties.VariableNames(1:3) = {'x_1','x_2','sol'};
+disp('The optimal solution of the maximization prob is');
+optimal_bfs
+
+end
+
