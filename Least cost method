@@ -1,0 +1,32 @@
+clc
+clear all 
+cost = [ 3 11 4 14 15 ; 6 16 18 2 28 ; 10 13 15 19 17 ; 7 12 5 8 9];
+demand = [20 10 15 15 5];
+supply = [15  25 10 15];
+[m,n] = size(cost)
+
+if sum(supply)==sum(demand)
+    disp('balanced least cost method');
+elseif sum(supply) < sum(demand)
+    disp('unbalanced problem')
+    cost = [cost;zeros(1,n)]
+    supply=[supply sum(demand)-sum(supply)]
+else
+    disp('unbalanced problem');
+    cost = [cost zeros(m,1)]
+    demand=[demand sum(supply)-sum(demand)]
+end
+x=zeros(m,n);
+c=cost;
+while(sum(demand>0))
+    min_cost = min(min(cost));
+    [r,c] = find(cost == min_cost);
+    y = min(supply(r),demand(c));
+    [alloc,index] = max(y);
+    x(r(index),c(index)) = alloc;
+    supply(r(index))=supply(r(index))-alloc;
+    demand(c(index))=demand(c(index))-alloc;
+    cost(r(index) , c(index)) = inf;
+end
+total_cost = c.*x
+final_cost = sum(sum(total_cost))
