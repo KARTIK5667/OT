@@ -1,0 +1,48 @@
+clc 
+clear all 
+variables = {'x1','x2','s1','s2','sol'};
+cost = [-3 -5 0 0 0];
+a = [-1 -3 1 0 -3 ; -1 -1 0 1 -2];
+bv = [3 4];
+zjcj = cost(bv)*a-cost;
+zcj = [zjcj;a];
+table=array2table(zcj);
+table.Properties.VariableNames(1:size(zcj,2))=variables
+AB=0;
+while (AB==0)
+    if any(a(:,end)<0)
+        disp('unfeasiable solution');
+        [lvg_val , pvt_row] = min(a(:,end));
+        for i=1:size(a,2)-1
+            if a(pvt_row ,i)<0
+                ratio(i)=zjcj(i)/a(pvt_row,i);
+            else
+                ratio(i)=-inf;
+            end
+        end
+        [ent_val , ent_col] = max(ratio);
+        a(pvt_row,:)=a(pvt_row,:)/a(pvt_row,ent_col);
+        for i=1:size(a,1)
+            if i~=pvt_row
+                a(i,:)=a(i,:)-a(i,ent_col)*a(pvt_row,:)
+            end
+        end
+        bv(pvt_row) = ent_col;
+        disp('new basic variable');
+        disp(bv);
+        zjcj = zjcj -zjcj(ent_col).*a(pvt_row,:);
+        zcj = [zjcj;a]
+        table=array2table(zcj);
+        table.Properties.VariableNames(1:size(zcj,2))=variables;
+        table
+        BFS=zeros(1,size(a,2));
+        BFS(end)=sum(BFS.*cost);
+        currenttable=array2table(BFS);
+        currenttable.Properties.VariableNames(1:size(BFS,2))=variables;
+        currenttable
+        
+
+    else 
+        AB=1;
+    end
+end
